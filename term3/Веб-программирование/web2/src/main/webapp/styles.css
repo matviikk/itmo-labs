@@ -1,0 +1,272 @@
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 20px;
+    background-color: #f4f4f4;
+}
+
+header {
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    padding: 1rem;
+}
+
+main {
+    margin-top: 2rem;
+}
+
+.index-main {
+    width: 100%;
+    max-width: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+@media (min-width: 768px) {
+    .index-main {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-around;
+        align-items: flex-start;
+    }
+
+    .index-main form,
+    .index-main .graph-container,
+    .index-main .results-container {
+        width: 30%;
+        margin: 10px;
+    }
+}
+
+.result-main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+form {
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-sizing: border-box;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+input[type="text"] {
+    width: 100%;
+    max-width: 200px;
+    padding: 8px;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+}
+
+fieldset {
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-bottom: 15px;
+}
+
+fieldset legend {
+    padding: 0 5px;
+}
+
+fieldset .options {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+fieldset .options label {
+    margin-right: 10px;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+}
+
+fieldset .options input {
+    margin-right: 5px;
+}
+
+button {
+    background-color: #333;
+    color: #fff;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #555;
+}
+
+canvas {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-top: 20px;
+    aspect-ratio: 1;
+    width: 100%;
+    max-width: 600px;
+    height: auto;
+}
+
+table {
+    border-collapse: collapse;
+    margin: 0 auto;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+.graph-container {
+    max-width: 600px;
+    margin: 0 auto 20px;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-sizing: border-box;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.graph-container button {
+    margin-top: 20px;
+}
+
+.graph-container canvas {
+    width: 100%;
+    height: auto;
+}
+
+.form-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    margin-right: 10px;
+    white-space: nowrap;
+}
+
+.form-group input[type="text"] {
+    flex: 1;
+}
+
+.result-main .results-container {
+    width: 100%;
+    max-width: none;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.result-main .results-container h2 {
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.result-main .results-container table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.result-main .back-link {
+    margin-top: 20px;
+    color: #333;
+    text-decoration: none;
+    font-weight: bold;
+    text-align: center;
+}
+
+.result-main .back-link:hover {
+    text-decoration: underline;
+}
+
+.result-message {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 1.5em;
+}
+
+.result-message.result-inside p {
+    color: green;
+}
+
+.result-message.result-outside p {
+    color: red;
+}
+
+.index-results-table {
+    width: 100%;
+    max-width: none;
+    margin: 0 auto;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-size: 16px;
+}
+
+.index-results-table th, .index-results-table td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: center;
+}
+
+.index-results-table th {
+    background-color: #f2f2f2;
+    font-size: 18px;
+}
+
+.history-results-table {
+    width: 50%;
+    max-width: 600px;
+    margin: 0 auto;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-size: 16px;
+}
+
+.history-results-table th, .history-results-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+}
+
+.history-results-table th {
+    background-color: #f2f2f2;
+    font-size: 16px;
+}
+
+.clear-button {
+    background-color: #444;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.clear-button:hover {
+    background-color: #555;
+}
+
+.clear-button:active {
+    background-color: #222;
+    box-shadow: none;
+}

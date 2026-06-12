@@ -1,0 +1,6 @@
+results/*.jtl
+results/*.log
+results/*.png
+*.jmx.bak
+__pycache__/
+.DS_Store

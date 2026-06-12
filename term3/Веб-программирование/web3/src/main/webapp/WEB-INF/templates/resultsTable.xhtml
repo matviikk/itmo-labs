@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+<ui:composition>
+    <p:dataTable id="resultsTable" value="#{pointBean.points}" var="point"
+                 styleClass="custom-table" paginator="true"
+                 paginatorPosition="bottom"
+                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                 currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords}">
+        <p:column headerText="X" styleClass="text-center">
+            <h:outputText value="#{point.x}"/>
+        </p:column>
+        <p:column headerText="Y" styleClass="text-center">
+            <h:outputText value="#{point.y}"/>
+        </p:column>
+        <p:column headerText="R" styleClass="text-center">
+            <h:outputText value="#{point.radius}"/>
+        </p:column>
+        <p:column headerText="Hit" styleClass="text-center">
+            <p:tag severity="#{point.hit ? 'success' : 'danger'}"
+                   value="#{point.hit ? 'Hit' : 'Miss'}"
+                   styleClass="text-sm"/>
+        </p:column>
+        <p:column headerText="Check Time" styleClass="text-center">
+            <h:outputText value="#{point.checkTime}">
+                <f:convertDateTime type="localDateTime" pattern="yyyy-MM-dd HH:mm:ss"/>
+            </h:outputText>
+        </p:column>
+        <p:column headerText="Execution Time (ns)" styleClass="text-center">
+            <h:outputText value="#{point.executionTime}"/>
+        </p:column>
+        <p:column headerText="Actions" styleClass="text-center w-6rem">
+            <p:commandButton icon="pi pi-trash"
+                             action="#{pointBean.deletePoint(point.id)}"
+                             update="resultsTable"
+                             oncomplete="drawPoints()"
+                             styleClass="ui-button-danger ui-button-rounded ui-button-sm custom-button"/>
+        </p:column>
+    </p:dataTable>
+</ui:composition>
+</html>

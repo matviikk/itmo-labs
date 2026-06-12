@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
+<h:head>
+    <title>Web Lab 3 - Start Page</title>
+    <h:outputStylesheet name="css/styles.css" />
+</h:head>
+<h:body styleClass="m-0">
+    <div class="custom-container">
+        <ui:include src="/WEB-INF/templates/header.xhtml" />
+
+        <div class="main-content">
+            <div class="flex flex-column align-items-center">
+                <div id="clock-display" class="clock-display"></div>
+
+
+                <p:button outcome="main" value="Go to Main Page"
+                          icon="pi pi-arrow-right"
+                          styleClass="ui-button-primary custom-button"/>
+            </div>
+        </div>
+    </div>
+    <h:outputScript library="js" name="clock.js"/>
+</h:body>
+</html>

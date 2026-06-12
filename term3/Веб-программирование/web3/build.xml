@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="WebProgrammingLab3" default="build" basedir=".">
+
+    <property file="build.properties"/>
+
+    <path id="test.classpath">
+        <pathelement path="${classes.dir}"/>
+        <pathelement path="${test.classes.dir}"/>
+        <fileset dir="${lib.dir}" includes="*.jar"/>
+    </path>
+
+    <target name="init">
+        <mkdir dir="${build.dir}"/>
+        <mkdir dir="${classes.dir}"/>
+        <mkdir dir="${test.classes.dir}"/>
+        <mkdir dir="${test.reports.dir}"/>
+        <mkdir dir="${war.dir}"/>
+    </target>
+
+    <target name="compile" depends="init">
+        <javac srcdir="${src.dir}"
+               destdir="${classes.dir}"
+               release="${target.java.version}"
+               includeantruntime="false"
+               encoding="${encoding}">
+            <classpath>
+                <fileset dir="${lib.dir}" includes="*.jar"/>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="build" depends="compile">
+        <war destfile="${war.dir}/${war.name}.war"
+             webxml="src/main/webapp/WEB-INF/web.xml">
+            <fileset dir="src/main/webapp"/>
+            <lib dir="${lib.dir}" includes="hibernate*.jar,postgresql*.jar,lombok*.jar,urlrewritefilter*.jar"/>
+            <classes dir="${classes.dir}"/>
+            <manifest>
+                <attribute name="Version" value="${project.version}"/>
+            </manifest>
+        </war>
+        <antcall target="music"/>
+    </target>
+
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+        <delete file="${war.dir}/${war.name}.war"/>
+    </target>
+
+    <target name="test" depends="build">
+        <javac srcdir="${test.src.dir}"
+               destdir="${test.classes.dir}"
+               release="${target.java.version}"
+               includeantruntime="false"
+               encoding="${encoding}">
+            <classpath refid="test.classpath"/>
+        </javac>
+
+        <junit printsummary="yes" haltonfailure="no">
+            <classpath refid="test.classpath"/>
+            <formatter type="xml"/>
+            <batchtest fork="yes" todir="${test.reports.dir}">
+                <fileset dir="${test.src.dir}">
+                    <include name="**/*Test.java"/>
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+
+    <target name="music">
+        <exec executable="${music.player}" spawn="true">
+            <arg value="${music.sound}"/>
+        </exec>
+    </target>
+
+    <target name="report" depends="test">
+        <junitreport todir="${test.reports.dir}">
+            <fileset dir="${test.reports.dir}">
+                <include name="TEST-*.xml"/>
+            </fileset>
+            <report format="frames" todir="${test.reports.dir}/html"/>
+        </junitreport>
+
+        <exec executable="svn" failonerror="true">
+            <arg value="add"/>
+            <arg value="${test.reports.dir}"/>
+            <arg value="--force"/>
+        </exec>
+        <exec executable="svn" failonerror="true">
+            <arg value="commit"/>
+            <arg value="-m"/>
+            <arg value="Added test report"/>
+        </exec>
+    </target>
+</project>

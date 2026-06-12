@@ -1,0 +1,89 @@
+:root {
+    --primary-color: rgba(33, 223, 230, 0.95);
+    --overlay-color: linear-gradient(244deg, #e70af2, #009bff, #4abde3);
+    --addl-color: rgba(74, 189, 227);
+    --font-family: Verdana, Geneva, sans-serif;
+}
+
+body {
+    background-color: rgb(33, 223, 230);
+    font-family: var(--font-family);
+    line-height: 1.5;
+    margin: 0;
+    min-block-size: 100vh;
+    padding: 5vmin;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container {
+    border-radius: 20px;
+    padding: 2em;
+    max-width: 40%;
+    text-align: center;
+    box-shadow: 0 0 1px .6em rgba(0, 0, 0, 0.004), 0 1px 1em rgba(0, 0, 0, 0.06);
+    overflow: auto;
+    background-color: white;
+}
+
+h1 {
+    font-size: 1.5rem;
+    text-align: center;
+    padding: 0 0 1em;
+    font-family: var(--font-family);
+    font-weight: 500;
+    margin-bottom: 20px;
+}
+
+button {
+    border-radius: 10px;
+    display: inline-block;
+    border: none;
+    background-color: rgb(123, 83, 234);
+    color: white;
+    padding: 1rem 2rem;
+    transition: opacity .6s ease-in-out;
+    text-decoration: none;
+    font-size: 1rem;
+    letter-spacing: 0.2rem;
+    font-weight: 500;
+    vertical-align: middle;
+    cursor: pointer;
+    width: 100%;
+    margin: 10px 0;
+}
+
+button:hover {
+    opacity: .95;
+}
+
+.table-list {
+    overflow-x: auto;
+}
+
+th, td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+th:last-child, td:last-child {
+    padding-right: 20px; /* Отступ справа для последнего столбца */
+}
+
+.button-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+}

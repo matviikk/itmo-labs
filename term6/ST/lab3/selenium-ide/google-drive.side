@@ -1,0 +1,56 @@
+{
+  "id": "9b2b5b6e-8a8f-4a3d-9f9d-1e7f3c2b1a01",
+  "version": "2.0",
+  "name": "Google Drive — функциональные тесты",
+  "url": "https://drive.google.com",
+  "tests": [
+    {
+      "id": "test-home",
+      "name": "UC-01: Главная страница Drive",
+      "commands": [
+        { "id": "c1", "comment": "Открыть Drive (нужно быть залогиненным в браузере)", "command": "open", "target": "/", "targets": [], "value": "" },
+        { "id": "c2", "command": "setWindowSize", "target": "1280x900", "targets": [], "value": "" },
+        { "id": "c3", "comment": "Видна кнопка Создать", "command": "assertElementPresent", "target": "xpath=//button[normalize-space(.)='Создать']", "targets": [], "value": "" }
+      ]
+    },
+    {
+      "id": "test-search",
+      "name": "UC-02: Поиск по Drive",
+      "commands": [
+        { "id": "s1", "command": "open", "target": "/", "targets": [], "value": "" },
+        { "id": "s2", "comment": "Поле поиска присутствует", "command": "assertElementPresent", "target": "xpath=//input[@name='q']", "targets": [], "value": "" },
+        { "id": "s3", "comment": "Ввести запрос", "command": "type", "target": "xpath=//input[@name='q']", "targets": [], "value": "отчёт" },
+        { "id": "s4", "comment": "Проверить значение", "command": "assertValue", "target": "xpath=//input[@name='q']", "targets": [], "value": "отчёт" }
+      ]
+    },
+    {
+      "id": "test-create",
+      "name": "UC-03: Меню Создать",
+      "commands": [
+        { "id": "n1", "command": "open", "target": "/", "targets": [], "value": "" },
+        { "id": "n2", "command": "click", "target": "xpath=//button[normalize-space(.)='Создать']", "targets": [], "value": "" },
+        { "id": "n3", "comment": "В меню есть пункт про папку", "command": "assertElementPresent", "target": "xpath=//*[@role='menuitem' and contains(., 'апк')]", "targets": [], "value": "" }
+      ]
+    },
+    {
+      "id": "test-account",
+      "name": "UC-04: Аватар аккаунта",
+      "commands": [
+        { "id": "a1", "command": "open", "target": "/", "targets": [], "value": "" },
+        { "id": "a2", "comment": "Виден элемент с aria-label про аккаунт Google", "command": "assertElementPresent", "target": "xpath=//*[contains(@aria-label, 'Аккаунт Google')]", "targets": [], "value": "" }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "all-suite",
+      "name": "Все сценарии",
+      "persistSession": false,
+      "parallel": false,
+      "timeout": 300,
+      "tests": ["test-home", "test-search", "test-create", "test-account"]
+    }
+  ],
+  "urls": ["https://drive.google.com/"],
+  "plugins": []
+}

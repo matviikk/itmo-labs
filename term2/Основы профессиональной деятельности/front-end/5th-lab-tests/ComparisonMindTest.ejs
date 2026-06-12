@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Оценка мышления</title>
+    <link rel="stylesheet" href="5th-lab-tests/ComparisonMindTest.css">
+    <style>
+        body, html {
+            background-image: url('images/background_gradient.png');
+        }
+    </style>
+</head>
+<body>
+<div id="container" class="container">
+    <h1>Оценка мышления: Тест сравнения</h1>
+    <div id="testArea" style="display: none;">
+        <img id="testImage" src="" alt="Тестовое изображение">
+    </div>
+    <div id="inputArea" style="display: none;">
+        <input type="number" id="userInput" placeholder="Введите количество отличий">
+        <button onclick="submitDifference()">Проверить</button>
+    </div>
+    <div id="results" style="display: none;"></div>
+    <div id="test-controls">
+        <button id="startButton" onclick="startTest(0)">Начать тест</button>
+        <button id="final-submit-button" onclick="sendData()" style="display: none">Отправить результат</button>
+        <button id="restart-button" onclick="restartTest()" style="display: none">Начать заново</button>
+    </div>
+</div>
+
+
+<script>
+    const images = [
+        {src: "images/compareTest/easy1.png", correctDifferences: 5},
+        {src: "images/compareTest/easy2.png", correctDifferences: 3},
+        {src: "images/compareTest/medium1.png", correctDifferences: 4},
+        {src: "images/compareTest/medium2.png", correctDifferences: 4},
+        {src: "images/compareTest/hard1.png", correctDifferences: 12},
+        {src: "images/compareTest/hard2.png", correctDifferences: 7}
+    ];
+
+    let currentTestIndex;
+    const testDuration = [60, 120, 150]; // В секундах
+    let results = []; // Сохраняем результаты пользователя
+    let timer, inputTimer;
+    let sum = 0;
+
+    function startTest(index) {
+        currentTestIndex = index;
+        document.getElementById('startButton').style.display = 'none'; // Скрываем кнопку "Начать тест"
+        document.getElementById('testArea').style.display = 'block';
+        document.getElementById('testImage').src = images[currentTestIndex].src; // Устанавливаем изображение
+        document.getElementById('inputArea').style.display = 'none'; // Скрываем поле ввода
+        document.getElementById('inputArea').style.display = 'block';
+
+    }
+
+
+    function nextTest() {
+        if (currentTestIndex < images.length - 1) {
+            currentTestIndex++;
+            startTest(currentTestIndex); // Начать следующий тест
+        } else {
+            showResults(); // Показать результаты, если это последний тест
+        }
+    }
+
+    function showResults() {
+        document.getElementById('testArea').style.display = 'none';
+        document.getElementById('inputArea').style.display = 'none';
+        document.getElementById('final-submit-button').style.display = 'block';
+        document.getElementById('restart-button').style.display = 'block';
+
+        let resultHTML = "<h2>Результаты теста:</h2>";
+        results.forEach((result, index) => {
+            if (result.found == result.total){
+                resultHTML += `<p>Вопрос ${index + 1}: Верно</p>`;
+            }
+            else {
+                resultHTML += `<p>Вопрос ${index + 1}: Не верно</p>`;
+            }
+            //resultHTML += `<p>Вопрос ${index + 1}: Найдено ${result.found} из ${result.total} отличий.</p>`;
+            sum += parseInt(result.found);
+        });
+        document.getElementById('results').innerHTML = resultHTML; // Отображаем результаты
+        document.getElementById('results').style.display = 'block'; // Показываем блок результатов
+    }
+
+
+    /* async function sendData() {
+        const data = {
+            testType: "compare_test",
+            result: correctAnswers
+        }
+
+        let url = ''
+        const urlObject = new URL(window.location.href)
+
+        if (urlObject.searchParams.has('data')) {
+            url += '/abstract_test?data=' + urlObject.searchParams.get('data')
+        } else {
+            url += '/abstract_test'
+        }
+
+        await fetch(url, {
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: {'Content-Type': 'application/json'},
+        })
+            .then(res => {
+                console.log(res)
+                // Redirect to another URL
+                window.location.href = res.url;
+            })
+            .catch(error => console.error(error));
+
+    } */
+
+    async function sendData() {
+        const data = {
+            testType: "compare_test",
+            result: sum
+        }
+
+        let url = ''
+        const urlObject = new URL(window.location.href)
+
+        if (urlObject.searchParams.has('data')) {
+            url += '/abstract_test?data=' + urlObject.searchParams.get('data')
+        } else {
+            url += '/abstract_test'
+        }
+
+        await fetch(url, {
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: {'Content-Type': 'application/json'},
+        })
+            .then(res => {
+                console.log(res)
+                // Redirect to another URL
+                window.location.href = res.url;
+            })
+            .catch(error => console.error(error));
+
+    }
+
+    function submitDifference() {
+        clearTimeout(timer);
+        clearTimeout(inputTimer);
+        const userDifference = parseInt(document.getElementById('userInput').value, 10);
+        const correctDifference = images[currentTestIndex].correctDifferences;
+
+        // Проверка на превышение количества отличий
+        let score = (userDifference > correctDifference) ? 0 : userDifference;
+        
+        // Сохраняем результаты
+        results.push({found: score, total: correctDifference});
+
+        let message;
+        if (userDifference === correctDifference) {
+            message = "Вы правильно нашли все отличия!";
+        } else if (userDifference < correctDifference) {
+            message = `Вы нашли меньше на ${correctDifference - userDifference} отличий.`;
+        } else {
+            message = `${userDifference - correctDifference} отличий нет в действительности (лишние).`;
+        }
+
+        alert(message);
+        document.getElementById('userInput').value = ''; // Очищаем поле ввода
+        nextTest(); // Переход к следующему тесту
+    }
+
+    function restartTest() {
+        currentTestIndex = 0;
+        results = [];
+        document.getElementById('final-submit-button').style.display = 'none';
+        document.getElementById('restart-button').style.display = 'none';
+        document.getElementById('results').style.display = 'none';
+        startTest(0);
+    }
+</script>
+</body>
+</html>

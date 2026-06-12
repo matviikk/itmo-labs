@@ -1,0 +1,1677 @@
+openapi: 3.0.3
+info:
+  title: Guider Backend API
+  version: 2.0.0
+  description: >
+    API documentation for authentication, collections constructor,
+    items, uploads, finalized collections, and room history.
+
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    AuthRequest:
+      type: object
+      required:
+        - login
+        - password
+      properties:
+        token:
+          type: string
+          nullable: true
+          description: Optional field, currently not used on backend side.
+        login:
+          type: string
+          example: testuser
+        password:
+          type: string
+          example: '1234'
+
+    AuthResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: true
+        token:
+          type: string
+          nullable: true
+          description: JWT token if operation is successful.
+        message:
+          type: string
+          nullable: true
+          description: Error message if ok is false.
+
+    ErrorResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: 'Something went wrong'
+        new_id:
+          type: integer
+          nullable: true
+        item_id:
+          type: integer
+          nullable: true
+        collection_id:
+          type: integer
+          nullable: true
+
+    CollectionItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        collectionId:
+          type: integer
+          example: 1
+        urlImage:
+          type: string
+          nullable: true
+          example: 'https://example.com/item-preview.png'
+        imagePath:
+          type: string
+          nullable: true
+          example: '/uploads/items/item-1700000000000.png'
+        description:
+          type: string
+          nullable: true
+          example: 'Item description'
+
+    CollectionMeta:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        ownerId:
+          type: integer
+          example: 1
+        urlImage:
+          type: string
+          nullable: true
+          example: 'https://example.com/collection-header.png'
+        imagePath:
+          type: string
+          nullable: true
+          example: '/uploads/collections/col-1700000000000.png'
+        description:
+          type: string
+          nullable: true
+          example: 'My first collection'
+
+    CollectionFull:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 3
+        ownerId:
+          type: integer
+          example: 1
+        urlImage:
+          type: string
+          nullable: true
+          description: 'Currently always null, collection images are not stored in DB'
+        imagePath:
+          type: string
+          nullable: true
+          description: 'Currently always null, collection images are not stored in DB'
+        description:
+          type: string
+          nullable: true
+          example: 'My first collection from draft'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CollectionItem'
+
+    DraftConstructorResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: true
+        new_id:
+          type: integer
+          example: 1
+
+    ConstructorMetaRequest:
+      type: object
+      properties:
+        url_image:
+          type: string
+          nullable: true
+          example: 'https://example.com/collection-header.png'
+        image:
+          type: string
+          nullable: true
+          description: Local server image path returned by /upload/collection-image.
+          example: '/uploads/collections/col-1700000000000.png'
+        description:
+          type: string
+          nullable: true
+          example: 'My first collection'
+
+    CreateItemRequest:
+      type: object
+      required:
+        - description
+      properties:
+        item_id:
+          type: integer
+          nullable: true
+          description: >
+            Desired item id from client. Backend may adjust it if invalid.
+        url_image:
+          type: string
+          nullable: true
+          example: 'https://example.com/item-preview.png'
+        image:
+          type: string
+          nullable: true
+          description: Local server image path returned by /upload/item-image.
+          example: '/uploads/items/item-1700000000000.png'
+        description:
+          type: string
+          example: 'Item description'
+        next:
+          type: boolean
+          description: If true, user wants to create another item.
+          example: true
+        save_exit:
+          type: boolean
+          description: If true, finalize collection and stop constructor.
+          example: false
+
+    CreateItemContinueResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: true
+        new_id:
+          type: integer
+          example: 1
+        item_id:
+          type: integer
+          example: 2
+
+    CreateItemFinalizeResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: true
+        collection_id:
+          type: integer
+          example: 1
+
+    UploadImageResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: true
+        imagePath:
+          type: string
+          example: '/uploads/collections/col-1700000000000.png'
+
+    DrawingTopicResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: true
+        topic:
+          type: string
+          nullable: true
+          example: 'Draw a flying cat in the city'
+        message:
+          type: string
+          nullable: true
+          example: 'No topics available'
+
+    HomeItem:
+      type: object
+      properties:
+        item_id:
+          type: integer
+          example: 10
+        url_image:
+          type: string
+          nullable: true
+          example: 'https://example.com/item.png'
+        description:
+          type: string
+          nullable: true
+          example: 'Item description'
+      required: [item_id, url_image, description]
+
+    CollectionType:
+      type: string
+      enum:
+        - WALK_AROUND_CITY
+        - DATE
+        - DINNER
+        - MOVIE_NIGHT
+        - COFFEE_TALK
+        - TRAVEL
+        - MUSEUM
+        - SPORTS
+        - PARTY
+        - DEFAULT
+
+    HomeCollection:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        url_image:
+          type: string
+          nullable: true
+          example: 'https://example.com/collection.png'
+        type:
+          $ref: '#/components/schemas/CollectionType'
+        description:
+          type: string
+          nullable: true
+          example: 'Collection description'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/HomeItem'
+      required: [id, url_image, type, description, items]
+
+    HomeCollectionsResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: true
+        collections:
+          type: array
+          items:
+            $ref: '#/components/schemas/HomeCollection'
+      required: [ok, collections]
+
+    OkFalseResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: 'Internal server error'
+      required: [ok, message]
+
+    SearchRoomRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+          minimum: 1
+          example: 1
+      required: [id]
+
+    SearchRoomResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: true
+        id_room:
+          type: integer
+          example: 1
+      required: [ok, id_room]
+
+    DrawingPoint:
+      type: object
+      required: [x, y]
+      properties:
+        x:
+          type: number
+          example: 120.5
+        y:
+          type: number
+          example: 42.2
+        color:
+          type: string
+          nullable: true
+          example: '#000000'
+
+    DrawingPoints:
+      type: array
+      items:
+        $ref: '#/components/schemas/DrawingPoint'
+
+    HistoryFilters:
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: true
+          description: Filter by room name (case-insensitive partial match)
+          example: 'Вечерняя'
+        type:
+          type: string
+          nullable: true
+          description: Filter by type/topic (exact match)
+          example: 'Прогулка'
+        date:
+          type: string
+          nullable: true
+          description: Filter by date in DD.MM.YYYY format
+          example: '15.12.2024'
+
+    HistoryRoom:
+      type: object
+      properties:
+        id:
+          type: string
+          example: '1'
+        name:
+          type: string
+          example: 'Вечерняя прогулка по городу'
+        url_image:
+          type: string
+          nullable: true
+          example: 'https://example.com/image.jpg'
+        type:
+          type: string
+          example: 'Прогулка'
+        description:
+          type: string
+          example: 'Прогулка'
+        date:
+          type: string
+          description: Date in DD.MM.YYYY format
+          example: '15.12.2024'
+      required: [id, name, url_image, type, description, date]
+
+    HistoryResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: true
+        rooms:
+          type: array
+          items:
+            $ref: '#/components/schemas/HistoryRoom'
+      required: [ok, rooms]
+
+    RoomParticipant:
+      type: object
+      properties:
+        user_id:
+          type: string
+          example: '1'
+        display_name:
+          type: string
+          example: 'Test User'
+        avatar_url:
+          type: string
+          nullable: true
+          example: 'https://example.com/avatar.jpg'
+        joined_at:
+          type: string
+          format: date-time
+          example: '2024-12-15T10:00:00Z'
+        finished_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: '2024-12-15T12:00:00Z'
+      required: [user_id, display_name, avatar_url, joined_at, finished_at]
+
+    RoomCreator:
+      type: object
+      properties:
+        id:
+          type: string
+          example: '1'
+        display_name:
+          type: string
+          example: 'Test User'
+        avatar_url:
+          type: string
+          nullable: true
+          example: 'https://example.com/avatar.jpg'
+      required: [id, display_name, avatar_url]
+
+    RoomHistoryDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          example: '1'
+        name:
+          type: string
+          example: 'Вечерняя прогулка по городу'
+        topic:
+          type: string
+          example: 'Прогулка'
+        match_mode:
+          type: string
+          enum: [FIRST_MATCH, WATCH_ALL]
+          example: 'FIRST_MATCH'
+        status:
+          type: string
+          enum: [OPEN, ACTIVE, CLOSED]
+          example: 'CLOSED'
+        access_mode:
+          type: string
+          enum: [PUBLIC, PRIVATE]
+          example: 'PUBLIC'
+        created_at:
+          type: string
+          format: date-time
+          example: '2024-12-15T10:00:00Z'
+        closed_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: '2024-12-15T12:00:00Z'
+        date:
+          type: string
+          description: Date in DD.MM.YYYY format
+          example: '15.12.2024'
+        result:
+          type: object
+          nullable: true
+          description: Room matching result (JSON object)
+        creator:
+          $ref: '#/components/schemas/RoomCreator'
+        participants:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoomParticipant'
+      required:
+        [
+          id,
+          name,
+          topic,
+          match_mode,
+          status,
+          access_mode,
+          created_at,
+          closed_at,
+          date,
+          result,
+          creator,
+          participants,
+        ]
+
+    RoomHistoryResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: true
+        room:
+          $ref: '#/components/schemas/RoomHistoryDetail'
+      required: [ok, room]
+
+    VotingItemSuggestor:
+      type: object
+      properties:
+        user_id:
+          type: string
+          example: '1'
+        display_name:
+          type: string
+          example: 'Test User'
+        avatar_url:
+          type: string
+          nullable: true
+
+    VotingItem:
+      type: object
+      properties:
+        id:
+          type: string
+          example: '1'
+        title:
+          type: string
+          example: 'Мираж синема'
+        description:
+          type: string
+          nullable: true
+        image_url:
+          type: string
+          nullable: true
+        suggested_by:
+          $ref: '#/components/schemas/VotingItemSuggestor'
+
+    RoomVotingState:
+      type: object
+      properties:
+        room_id:
+          type: string
+          example: '1'
+        room_name:
+          type: string
+          example: 'Вечерняя прогулка'
+        current_item:
+          $ref: '#/components/schemas/VotingItem'
+          nullable: true
+        total_items:
+          type: integer
+          example: 5
+        voted_count:
+          type: integer
+          example: 2
+        is_finished:
+          type: boolean
+          example: false
+        all_finished:
+          type: boolean
+          example: false
+
+    VoteRequest:
+      type: object
+      required:
+        - item_id
+        - vote
+      properties:
+        item_id:
+          type: string
+          example: '1'
+        vote:
+          type: boolean
+          example: true
+
+    VoteResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: true
+        next_item:
+          $ref: '#/components/schemas/VotingItem'
+          nullable: true
+        is_finished:
+          type: boolean
+          example: false
+        all_finished:
+          type: boolean
+          example: false
+        redirect_to:
+          type: string
+          nullable: true
+          enum: [drawing, drawing_res, results]
+          example: 'results'
+
+    MatchedItem:
+      type: object
+      properties:
+        id:
+          type: string
+          example: '1'
+        title:
+          type: string
+          example: 'Мираж синема'
+        description:
+          type: string
+          nullable: true
+        image_url:
+          type: string
+          nullable: true
+
+    RoomResultsResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: true
+        has_match:
+          type: boolean
+          example: true
+        matched_items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MatchedItem'
+        message:
+          type: string
+          nullable: true
+
+paths:
+  /auth/register:
+    post:
+      summary: Register a new user
+      description: Create a new user and return a JWT token.
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+      responses:
+        '200':
+          description: Register result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+
+  /auth/login:
+    post:
+      summary: Login
+      description: Authenticate user and return a JWT token.
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+      responses:
+        '200':
+          description: Login result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+
+  /collections/constructor:
+    post:
+      summary: Create or get draft collection
+      description: >
+        Create (or reuse) a draft collection for current user and return its id (new_id).  
+        Draft exists only in memory until user finalizes it.
+      tags:
+        - Collections
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Draft collection id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DraftConstructorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /collections/constructor/{new_id}:
+    post:
+      summary: Save or load draft collection constructor state
+      description: >
+        If body contains collection metadata (url_image, image, description) – saves metadata into draft.  
+        If body is empty – returns draft state with next item id.
+      tags:
+        - Collections
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: new_id
+          required: true
+          schema:
+            type: integer
+          description: Draft collection id (may be ignored on server side)
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConstructorMetaRequest'
+      responses:
+        '200':
+          description: Draft metadata saved or state loaded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  new_id:
+                    type: integer
+                    description: 'Draft collection id'
+                  item_id:
+                    type: integer
+                    nullable: true
+                    description: 'Next item id when loading constructor state'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /collections/constructor/item:
+    post:
+      summary: Create or update item in draft collection
+      description: >
+        Create an item inside the current draft collection.  
+        If `save_exit` is true, the draft collection will be finalized and saved into PostgreSQL.
+      tags:
+        - Collections
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateItemRequest'
+      responses:
+        '200':
+          description: Item created or collection finalized
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/CreateItemContinueResponse'
+                  - $ref: '#/components/schemas/CreateItemFinalizeResponse'
+        '400':
+          description: Validation error while saving item
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /collections/{id}:
+    get:
+      summary: Get finalized collection (private)
+      tags:
+        - Collections
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Collection data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  collection:
+                    $ref: '#/components/schemas/CollectionFull'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Access denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Collection not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Update finalized collection metadata (private)
+      tags:
+        - Collections
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                url_image:
+                  type: string
+                  nullable: true
+                  description: 'Validated but not stored in DB yet'
+                image:
+                  type: string
+                  nullable: true
+                  description: 'Validated but not stored in DB yet'
+                description:
+                  type: string
+                  nullable: true
+                  description: 'Collection description; actually stored in DB'
+      responses:
+        '200':
+          description: Updated collection
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  collection:
+                    $ref: '#/components/schemas/CollectionFull'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Access denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Collection not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /upload/collection-image:
+    post:
+      summary: Upload collection image
+      description: >
+        Upload a collection image file.  
+        Returns `imagePath` which can be used in collection metadata (constructor).
+      tags:
+        - Upload
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Upload result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadImageResponse'
+        '400':
+          description: No image provided or invalid file
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /upload/item-image:
+    post:
+      summary: Upload item image
+      description: >
+        Upload an item image file.  
+        Returns `imagePath` which can be used when creating items in constructor.
+      tags:
+        - Upload
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Upload result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadImageResponse'
+        '400':
+          description: No image provided or invalid file
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /drawing/topic:
+    get:
+      summary: Get a drawing topic
+      description: >
+        Return a drawing topic from the server-side pool.  
+        Frontend should provide last_topic (from local storage) so that
+        backend can try to avoid returning the same topic.
+      tags:
+        - Drawing
+      parameters:
+        - in: query
+          name: last_topic
+          schema:
+            type: string
+            nullable: true
+          required: false
+          description: Last topic shown to the user (or null on first visit).
+      responses:
+        '200':
+          description: Drawing topic response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DrawingTopicResponse'
+        '500':
+          description: Internal server error while getting topic
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /home:
+    get:
+      tags: [home]
+      summary: Get ready collections for Home (public)
+      responses:
+        '200':
+          description: Collections list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HomeCollectionsResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkFalseResponse'
+
+    post:
+      tags: [home]
+      summary: Get collections of current user (private)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User collections list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HomeCollectionsResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkFalseResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkFalseResponse'
+
+  /home/search:
+    post:
+      tags: [home]
+      summary: Search room by id (private)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchRoomRequest'
+      responses:
+        '200':
+          description: Room found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchRoomResponse'
+        '400':
+          description: Invalid room id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkFalseResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkFalseResponse'
+        '404':
+          description: Room not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkFalseResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkFalseResponse'
+
+  /rooms/create:
+    post:
+      tags: [Rooms]
+      summary: Create room or check access
+      description: |
+        Mode 1 (empty body): check access
+        Mode 2: create a new room
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                type_match:
+                  type: integer
+                  enum: [1, 2]
+                password:
+                  type: string
+                type_collections:
+                  type: integer
+                  enum: [1, 2]
+                collection_id:
+                  oneOf:
+                    - type: integer
+                    - type: array
+                      items:
+                        type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        example: true
+                  - type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        example: true
+                      id_room:
+                        type: integer
+        '400':
+          description: Bad request / validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkFalseResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkFalseResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkFalseResponse'
+
+  /rooms/connect/{id_room}:
+    post:
+      tags: [Rooms]
+      summary: Connect to room or get collections
+      description: |
+        Mode 1 (empty body): return user's collections
+        Mode 2: submit password + collection_id
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id_room
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                collection_id:
+                  type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        example: true
+                      collection_choose:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            type:
+                              type: string
+                            url_image:
+                              type: string
+                              nullable: true
+                            description:
+                              type: string
+                              nullable: true
+                            title:
+                              type: string
+                  - type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        example: true
+        '400':
+          description: Bad request / validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkFalseResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkFalseResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkFalseResponse'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkFalseResponse'
+
+  /rooms/{id_room}:
+    post:
+      tags: [Rooms]
+      summary: Room cards flow
+      description: |
+        Mode 1 (empty body): get current card
+        Mode 2: submit choice (0 exit, 1 yes, 2 no)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id_room
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                choose:
+                  type: integer
+                  enum: [0, 1, 2]
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        example: true
+                      nick:
+                        type: string
+                      profile_picture_url:
+                        type: string
+                        nullable: true
+                      name_card:
+                        type: string
+                      description:
+                        type: string
+                  - type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        example: true
+                      redirect:
+                        type: string
+        '400':
+          description: Bad request / validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkFalseResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkFalseResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkFalseResponse'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkFalseResponse'
+
+  /rooms/{id_room}/drawing:
+    post:
+      tags: [Rooms]
+      summary: Drawing page
+      description: |
+        Mode 1 (empty body): get topic and existing points
+        Mode 2: submit full points list
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id_room
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                points:
+                  $ref: '#/components/schemas/DrawingPoints'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        example: true
+                      topic:
+                        type: string
+                        nullable: true
+                      points:
+                        $ref: '#/components/schemas/DrawingPoints'
+                  - type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        example: true
+        '400':
+          description: Bad request / validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkFalseResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkFalseResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkFalseResponse'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkFalseResponse'
+
+  /history:
+    get:
+      tags:
+        - History
+      summary: Get list of closed rooms (history) with optional filters
+      description: >
+        Returns a list of closed rooms created by the current user.
+        Supports filtering by name, type, and date via query parameters.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: name
+          schema:
+            type: string
+          required: false
+          description: Filter by room name (case-insensitive partial match)
+        - in: query
+          name: type
+          schema:
+            type: string
+          required: false
+          description: Filter by type/topic (exact match)
+        - in: query
+          name: date
+          schema:
+            type: string
+          required: false
+          description: Filter by date in DD.MM.YYYY format
+      responses:
+        '200':
+          description: List of rooms
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoryResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkFalseResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkFalseResponse'
+
+  /history/{id}:
+    get:
+      tags:
+        - History
+      summary: Get detailed history of a specific room
+      description: >
+        Returns detailed information about a closed room including creator,
+        participants, and matching result. User must have participated in the room.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: Room ID
+          example: 1
+      responses:
+        '200':
+          description: Room history details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomHistoryResponse'
+        '400':
+          description: Invalid room id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkFalseResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkFalseResponse'
+        '404':
+          description: Room not found or access denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkFalseResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkFalseResponse'
+
+  /rooms/{id}/voting:
+    get:
+      tags:
+        - Rooms
+      summary: Get current voting state for user in room
+      description: Returns current item to vote on and progress status.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: Room ID
+      responses:
+        '200':
+          description: Voting state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomVotingState'
+        '404':
+          description: Room not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkFalseResponse'
+
+  /rooms/{id}/vote:
+    post:
+      tags:
+        - Rooms
+      summary: Submit a vote for an item
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VoteRequest'
+      responses:
+        '200':
+          description: Vote submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VoteResponse'
+
+  /rooms/{id}/results:
+    get:
+      tags:
+        - Rooms
+      summary: Get room voting results
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Room results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomResultsResponse'
+    post:
+      tags:
+        - Results
+      summary: Room results
+      description: Return selected cards for all users
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  cards:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        profile_picture_url:
+                          type: string
+                          nullable: true
+                        name_card:
+                          type: string
+                        description:
+                          type: string
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkFalseResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkFalseResponse'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkFalseResponse'
+
+  /rooms/{id}/leave:
+    post:
+      tags:
+        - Rooms
+      summary: Leave a room
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Left successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true

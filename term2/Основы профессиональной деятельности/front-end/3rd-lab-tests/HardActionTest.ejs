@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="3rd-lab-tests/EasyActionTestStyle.css">
+        <style>
+            body {
+                background-image: url('images/background_gradient.png');
+                background-size: cover;
+                background-position: center;
+            }
+        </style>
+        <title>Hard Action Test</title>
+    </head>
+
+    <body>
+        <h1>Hard Action Test</h1>
+        <p id="time-left"></p>
+        <p id="instruction">Нужно нажимать на пробел, когда шарик будет максимально близко к центру</p>
+        <select id="time-select">
+            <option value="10">10 секунд</option>
+            <option value="120">2 минуты</option>
+            <option value="300">5 минут</option>
+            <option value="600">10 минут</option>
+            <option value="1500">25 минут</option>
+            <option value="2700">45 минут</option>
+        </select>
+        <div id="start-button-enclosing">
+            <button id="start-button" onclick="hideButton()">Начать тест</button>
+        </div>
+        <div id="result-enclosing"></div>
+        <div id="submit-button-enclosing"></div>
+        <div id="restart-button-enclosing"></div>
+        <canvas id="canvas" width="550" height="400"></canvas>
+        <div id="stop-button-enclosing"></div>
+    </body>
+
+<script>
+    const canvas = document.getElementById("canvas");
+    const context = canvas.getContext("2d");
+    const circleRadius = 30;
+    const fixedCircleX = canvas.width / 2;
+    const fixedCircleY = canvas.height / 2;
+    let directionX1 = Math.floor(Math.random() * 350) + 25;
+    let directionY1 = Math.floor(Math.random() * 250) + 25;
+    let speedX1 = 0;
+    let speedY1 = 0;
+    let directionX2 = Math.floor(Math.random() * 350) + 25;
+    let directionY2 = Math.floor(Math.random() * 250) + 25;
+    let speedX2 = 0
+    let speedY2 = 0;
+    let testCounter = 0;
+    let match = 0;
+    let accuracy = 0;
+    let testPassed = false;
+    let averageAccuracy = 0;
+    let totalAccuracy = 0;
+    let hit = 0;
+
+    canvas.style.display = "none";
+
+    function changeBackgroundColor() {
+        canvas.style.backgroundColor = "#fff";
+    }
+
+    function hideButton() {
+        canvas.style.display = "block";
+
+        const selectedTime = document.getElementById("time-select").value;
+        const endTime = new Date().getTime() + (selectedTime * 1000);
+        updateTimeLeft(endTime);
+        setTimeout(stopTest, selectedTime * 1000); 
+
+        document.getElementById("start-button").style.display = "none";
+        document.getElementById("instruction").style.display = "none";
+        document.getElementById("time-select").style.display = "none";
+
+        const stopButtonEnclosing = document.getElementById("stop-button-enclosing");
+        const stopButton = document.createElement("button");
+        stopButton.textContent = "Прервать тест"
+        stopButton.onclick = stopTest
+        stopButtonEnclosing.appendChild(stopButton);
+
+        changeBackgroundColor();
+        drawFrame();
+        drawCircles();
+        calculatePosition();
+        moveCircle();
+    }
+
+    async function sendData(){
+        if(testPassed){
+            const data = {
+                testType : "hard_action",
+                accuracy: averageAccuracy
+            }
+
+            let url = ''
+            const urlObject = new URL(window.location.href)
+
+            if (urlObject.searchParams.has('data')){
+                url += '/accuracy_test?data=' + urlObject.searchParams.get('data')
+            } else {
+                url += '/accuracy_test'
+            }
+
+            await fetch(url, {
+                method: 'POST',
+                body: JSON.stringify(data),
+                headers: { 'Content-Type': 'application/json' },
+            })
+                .then(res => {
+                    console.log(res)
+                    // Redirect to another URL
+                    window.location.href = res.url;
+                })
+                .catch(error => console.error(error));
+        }
+    }
+
+    function stopTest() {
+        if (!testPassed) {
+            testPassed = true; // Устанавливаем флаг окончания теста
+            
+            if (document.getElementById("restart-button-enclosing").style.display != "none" && document.getElementById("submit-button-enclosing").style.display != "none"){
+                canvas.style.display = "none";
+                const submitButtonEnclosing = document.getElementById("submit-button-enclosing");
+                const submitButton = document.createElement("button");
+                submitButton.textContent = "Отправить результат"
+                submitButton.onclick = sendData
+                submitButtonEnclosing.appendChild(submitButton);
+
+                const restartButtonEnclosing = document.getElementById("restart-button-enclosing");
+                const restartButton = document.createElement("button");
+                restartButton.textContent = "Пройти заново"
+                restartButton.addEventListener('click', runTest);
+                restartButtonEnclosing.appendChild(restartButton);
+
+                document.getElementById("stop-button-enclosing").style.display = "none";
+                document.getElementById("time-left").style.display = "none";
+
+                const resultEnclosing = document.getElementById("result-enclosing");
+                resultEnclosing.innerText = `Средняя точность попадания: ${averageAccuracy.toFixed(2)}%`;
+            }
+        }
+    }
+
+    function updateTimeLeft(endTime) {
+        const timeLeftElement = document.getElementById("time-left");
+
+        function update() {
+            const currentTime = new Date().getTime();
+            const timeRemaining = endTime - currentTime;
+
+            const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+
+            timeLeftElement.textContent = `Осталось времени: ${minutes} минут ${seconds} секунд`;
+
+            if (timeRemaining <= 0) {
+                document.getElementById("time-left").style.display = "none";
+                return;
+            }
+
+            setTimeout(update, 1000); // Обновляем каждую секунду
+        }
+
+        update();
+    }
+
+    function drawFrame() {
+        const frameX = canvas.width;
+        const frameY = canvas.height;
+        context.fillStyle = canvas.style.backgroundColor;
+        context.fillRect(frameX, frameY, canvas.width, canvas.height); // draw frame
+    }
+
+    function calculatePosition(){
+        directionX1 = Math.floor(Math.random() * 350) + 30;
+        directionY1 = Math.floor(Math.random() * 250) + 30;
+        speedX1 = Math.floor(Math.random() * 2.5) + 3;
+        speedY1 = Math.floor(Math.random() * 2.5) + 3;
+        directionX2 = Math.floor(Math.random() * 350) + 30;
+        directionY2 = Math.floor(Math.random() * 250) + 30;
+        speedX2 = Math.floor(Math.random() * 2.5) + 3;
+        speedY2 = Math.floor(Math.random() * 2.5) + 3;
+    }
+
+    function drawCircles() {
+        context.beginPath();
+        context.arc(fixedCircleX, fixedCircleY, circleRadius, 0, 2 * Math.PI); // draw fixed circle
+        context.fillStyle = "rgba(12, 28, 67)";
+        context.fill();
+
+        context.beginPath();
+        context.arc(directionX1, directionY1, circleRadius, 0, 2 * Math.PI); // draw moving circle
+        context.fillStyle = "rgba(0, 103, 187)";
+        context.fill();
+
+        context.beginPath();
+        context.arc(directionX2, directionY2, circleRadius, 0, 2 * Math.PI); // draw second moving circle
+        context.fillStyle = "rgba(120, 50, 290)";
+        context.fill();
+    }
+
+    function moveCircle() {
+        directionX1 += speedX1;
+        directionY1 += speedY1;
+
+        if (directionX1 < 20 || directionX1 > canvas.width) {
+            speedX1 = -speedX1;
+        }
+        if (directionY1 < 20 || directionY1 > canvas.height) {
+            speedY1 = -speedY1;
+        }
+        directionX2 += speedX2;
+        directionY2 += speedY2;
+
+        if (directionX2 < 20 || directionX2 > canvas.width) {
+            speedX2 = -speedX2;
+        }
+        if (directionY2 < 20 || directionY2 > canvas.height) {
+            speedY2 = -speedY2;
+        }
+
+        context.clearRect(0, 0, canvas.width, canvas.height); // clear screen
+        drawFrame();
+        drawCircles();
+        requestAnimationFrame(moveCircle);
+    }
+
+    window.addEventListener("keydown", function (event) {
+        if (event.code === "Space" && testPassed === false && canvas.style.display != "none") {
+            testCounter++;
+            checkHit();
+        }
+    });
+
+    function checkHit() {
+        const distance1 = Math.sqrt((directionX1 - fixedCircleX) ** 2 + (directionY1 - fixedCircleY) ** 2);
+        const distance2 = Math.sqrt((directionX2 - fixedCircleX) ** 2 + (directionY2 - fixedCircleY) ** 2);
+        if ((distance1 <= circleRadius * 2) || (distance2 <= circleRadius * 2)) {
+            testCounter++;
+            match++;
+            if ((distance1 <= circleRadius * 2) && (distance2 > circleRadius * 2)){
+                hit = distance1;
+            }
+            if((distance2 <= circleRadius * 2) && (distance1 > circleRadius * 2)){
+                hit = distance2;
+            }
+            if((distance2 <= circleRadius * 2) && (distance1 <= circleRadius * 2)){
+                hit = (distance1 + distance2)/2;
+            }
+            showReactionAndAccuracy();
+        }else {
+            match = 0;
+            hit = 0;
+            showReactionAndAccuracy();
+        }
+    }
+
+    function showReactionAndAccuracy() {
+        const resultEnclosing = document.getElementById("result-enclosing");
+        let message;
+        if (match > 0) {
+            accuracy = 100 - (hit/(circleRadius*2) * 100);
+            totalAccuracy += accuracy;
+            averageAccuracy = totalAccuracy/testCounter;
+            message = `Точность попадания: ${accuracy.toFixed(2)}%`;
+        } else {
+            accuracy = 0;
+            totalAccuracy += accuracy;
+            averageAccuracy = totalAccuracy/testCounter;
+            message = 'Промах';
+        }
+        resultEnclosing.innerText = message;
+    }
+
+    function runTest() {
+        window.location.href = window.location.origin + window.location.pathname;
+    }
+
+</script>
+</html>

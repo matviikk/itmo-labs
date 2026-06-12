@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+<ui:composition>
+    <div class="custom-header px-4 py-3 md:px-6 lg:px-8">
+        <div class="flex align-items-center justify-content-between">
+            <div class="flex align-items-center">
+                <i class="pi pi-code header-icon"/>
+                <span class="header-title">Web Programming Lab #3</span>
+            </div>
+            <div class="flex gap-3">
+                <p:chip label="#{userInfo.studentName}" styleClass="custom-chip"/>
+                <p:chip label="Group #{userInfo.groupNumber}" styleClass="custom-chip"/>
+                <p:chip label="Variant #{userInfo.variant}" styleClass="custom-chip"/>
+            </div>
+        </div>
+    </div>
+</ui:composition>
+</html>

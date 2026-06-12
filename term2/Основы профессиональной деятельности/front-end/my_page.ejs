@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="my_page.css">
+    <title>Профиль: <%= username %></title>
+    <style>
+        body {
+        background-image: url('images/background_gradient.png');
+        background-size: cover; 
+        background-position: center; 
+        }
+    </style>
+</head>
+<body class="body-background">
+    <section class="container">
+    <div class="menu-wrap">
+        <input type="checkbox" class="toggler">
+        <div class="main-menu-icon"><div></div></div>
+        <div class="menu">
+            <div>
+                <div>
+                    <ul>
+                        <li><a href="/">ДОМАШНЯЯ СТРАНИЦА</a></li>
+
+                        <% if (!loggedIn) { %>
+                            <li><a href="/login">ВОЙТИ</a></li>
+                        <% } %>
+
+                        <% if (loggedIn) { %>
+                            <li><a href="/characteristics">ПРОФЕССИИ</a></li>
+                        <% } %>
+
+                        <% if (adminUser) { %>
+                            <li><a href="/poll_1_part_1">ОПРОС</a></li>
+                        <% } %>
+
+                        <% if (adminUser) { %>
+                            <li><a href="/polls_results">РЕЗУЛЬТАТЫ ТЕСТИРОВАНИЯ</a></li>
+                        <% } %>
+                        <% if (adminUser) { %>
+                            <li><a href="/adminRegister">ДОБАВИТЬ АДМИНА</a></li>
+                        <% } %>
+                        <% if (adminUser) { %>
+                            <li><a href="/create_invite">ССЫЛКА-ПРИГЛАШЕНИЕ</a></li>
+                        <% } %>
+                        <% if (loggedIn) { %>
+                            <li><a href="/adminPage">ЭКСПЕРТЫ</a></li>
+                        <% } %>
+                        <% if (loggedIn) { %>
+                            <li><a href="/logout">ВЫЙТИ</a></li>
+                        <% } %>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+        <!-- <div class="qualities-container"> -->
+            <h1>Мой профиль</h1>
+
+            <% if (!respondentUser && !adminUser) { %>
+                    <button id="becomeRespondentButton">Стать респондентом</button>
+            <% } %>
+
+            <div class="qualities-header"><h2>Имя: <%= username %></h2></div>
+            <div class="qualities-header"><h2>ID: <%= id %></h2></div>
+            <% if (respondentUser) { %>
+               <div class="qualities-header">
+                               <% if (email) { %>
+                                   <h2>email: <%= email %></h2>
+                               <% } %>
+                           </div>
+                       <% } %>
+
+
+             <div class="qualities-header"><h2>Количество пройденных тестов: <%= countPT %></h2></div>
+            <% if (respondentUser) { %>
+                <div class="qualities-header"><h2>Респондент: ✔️</h2></div>
+            <% } else { %>
+                <div class="qualities-header"><h2>Респондент: ❌</h2></div>
+            <% } %>
+
+            <% if (adminUser) { %>
+                <div class="qualities-header"><h2>Админ: ✔️</h2></div>
+            <% } else { %>
+                <div class="qualities-header"><h2>Админ: ❌</h2></div>
+            <% } %>
+            <% if (respondentUser) { %>
+                        <button id="allTestsButton" onclick="location.href='/all_tests'">Все тесты</button>
+                    <% } %>
+            <% if (adminUser) { %>
+                        <button onclick="location.href='/all_users'">Все пользователи</button>
+                    <% } %>
+            
+            <button onclick="location.href='/pvk_list'">Развитие ПВК</button>
+        <!-- </div>  -->
+
+
+
+    </section>
+    <script>
+            var becomeRespondentButton = document.getElementById('becomeRespondentButton')
+            becomeRespondentButton.addEventListener('click', setMail)
+
+            async function setMail(){
+
+         var email = prompt("Введите адрес электронной почты:");
+               //проверить по формату:
+               if(!email.match(/^\S+@\S+\.\S+$/)) {
+          alert("Неверный формат адреса!")
+          return true;
+
+
+
+        } else {
+
+                const data = {email:email}
+                console.log(document);
+                await fetch('/setmail', {
+                    method: "POST",
+                    body: JSON.stringify(data),
+                    headers : {'Content-Type' : 'application/json'}
+                })
+                    .then( alert ("Ok"))
+                    .catch(e => console.log(e))
+            }
+        }
+        </script>
+</body>
+</html>

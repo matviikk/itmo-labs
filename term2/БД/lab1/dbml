@@ -1,0 +1,37 @@
+Table people {
+  id SERIAL [pk, increment]
+  full_name varchar(255) [not null]
+  date_of_birth date [not null]
+  this_superpower superpower
+  this_sex sex [not null]
+  this_condition condition [not null]
+}
+
+Table planets {
+  id SERIAL [pk, increment]
+  name_planet varchar(255) [not null]
+  description_planet text
+}
+
+Table cities {
+  id SERIAL [pk, increment]
+  name_city varchar(255) [not null]
+  population_city int
+  year_city int
+  planet_id int [not null, ref: > planets.id] // Указываем связь корректно
+}
+
+Table scene {
+  id SERIAL [pk, increment]
+  people_id int [not null, ref: > people.id] // Указываем связь корректно
+  cities_id int [not null, ref: > cities.id] // Указываем связь корректно
+  actions_mc varchar(255) [not null]
+  actions_mc_with_mc varchar(255) [not null]
+  aim_mc varchar(255) [not null]
+  date_of_scene date [not null]
+}
+
+Table minor_characters {
+  people_id int [pk,not null, ref: > people.id] // Указываем связь корректно
+  cities_id int [pk,not null, ref: > cities.id] // Указываем связь корректно
+}

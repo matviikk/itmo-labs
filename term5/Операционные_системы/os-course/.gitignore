@@ -1,0 +1,37 @@
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Debug symbols (macOS)
+*.dSYM/
+**/*.dSYM/
+
+# Binary output
+bin/
+out/
+
+# Editor/IDE
+.vscode/
+.idea/
+
+# Object files
+*.o
+*.obj
+
+# Executables
+cpu-calc-crc
+cpu_calc_crc
+ema-join-hash
+ema_join_hash
+mysh
+proc-vfork
+proc_vfork
+shell-and
+shell_and
+
+# Temporary files
+*.tmp
+*.log
+
+# Makefile artifacts
+*.d

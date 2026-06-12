@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
+<h:head>
+    <title>Web Lab 3 - Main Page</title>
+    <h:outputStylesheet name="css/styles.css" />
+</h:head>
+<h:body styleClass="m-0">
+    <div class="custom-container">
+        <ui:include src="/WEB-INF/templates/header.xhtml"/>
+
+        <div class="main-content">
+            <div class="coordinate-system mb-4">
+                <canvas id="coordinateCanvas" width="400" height="400" style="border: 1px solid #ccc;"></canvas>
+            </div>
+
+            <h:form id="coordinateForm">
+                <ui:include src="/WEB-INF/templates/coordinateForm.xhtml"/>
+                <div class="flex justify-content-center mt-4">
+                    <p:button outcome="index" value="Back to Start Page"
+                              icon="pi pi-arrow-left"
+                              styleClass="ui-button-secondary custom-button"/>
+                </div>
+                <ui:include src="/WEB-INF/templates/resultsTable.xhtml"/>
+            </h:form>
+        </div>
+    </div>
+
+    <h:outputScript library="js" name="CoordinateSystem.js"/>
+    <h:outputScript library="js" name="main.js"/>
+</h:body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastCGI Server Point Checker - Табличная вёрстка</title>
+    <!-- Link to Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <!-- Link to external CSS -->
+    <link href="styles.css" rel="stylesheet">
+</head>
+<body>
+<table style="width: 100%;">
+    <tr>
+        <td colspan="2" id="header">
+            Student Name: Здор Матвей Максимович | Group: P3224 | Variant: 342951
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <canvas id="plotCanvas"></canvas>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <form id="pointForm" method="get">
+                <table class="form-table">
+                    <tr>
+                        <td>
+                            <label for="x">X Coordinate:</label>
+                        </td>
+                        <td>
+                            <select id="x" name="x">
+                                <option value="-5">-5</option>
+                                <option value="-4">-4</option>
+                                <option value="-3">-3</option>
+                                <option value="-2">-2</option>
+                                <option value="-1">-1</option>
+                                <option value="0">0</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label for="y">Y Coordinate:</label>
+                        </td>
+                        <td>
+                            <input type="text" id="y" name="y" placeholder="Enter Y (-3 ... 5)" required>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>R Value:</td>
+                        <td>
+                            <table class="r-values">
+                                <tr>
+                                    <td><label><input type="radio" name="r" value="1"> 1</label></td>
+                                    <td><label><input type="radio" name="r" value="2"> 2</label></td>
+                                    <td><label><input type="radio" name="r" value="3"> 3</label></td>
+                                    <td><label><input type="radio" name="r" value="4"> 4</label></td>
+                                    <td><label><input type="radio" name="r" value="5"> 5</label></td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" class="center">
+                            <button type="button" onclick="sendData()">Check Point</button>
+                            <div id="error-message"></div>
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" id="results"></td>
+    </tr>
+</table>
+
+<!-- Link to external JavaScript -->
+<script src="scripts.js"></script>
+</body>
+</html>

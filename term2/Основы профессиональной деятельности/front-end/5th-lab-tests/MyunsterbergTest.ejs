@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Тест на концентрацию</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-image: url('images/background_gradient.png');
+            background-size: 100%, 100%;
+            text-align: center;
+            color: white;
+        }
+        .sequence {
+            margin: 20px 0;
+            font-size: 16px;
+            word-wrap: break-word;
+        }
+        .words input[type="checkbox"] {
+            margin-right: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            margin-top: 20px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<h1>Тест на концентрацию</h1>
+<div id="sequence" class="sequence hidden"></div>
+<div id="words" class="words hidden"></div>
+<div id="timerDisplay" style="font-size: 24px; margin-top: 20px;" class="hidden"></div>
+<div id="results" class="hidden"></div>
+<div id="control-buttons">
+    <button id="start-button" onclick="startTest()">Начать тест</button>
+    <button id="next-button" class="hidden" onclick="showNextLevel()">Далее</button>
+    <button id="restart-button" class="hidden" onclick="restartTest()">Пройти заново</button>
+    <button id="send-results-button" class="hidden" onclick="sendData()">Отправить результат</button>
+</div>
+
+<script>
+    let correctAllCount = 0;
+    const levels = ['easy', 'medium', 'hard']; // Уровни сложности
+    let currentLevel = 0;
+    let correctImages = [];
+    let selectedImages = [];
+    let results = [];
+    let timeRemaining;
+    let timerInterval; // Таймер интервала
+
+    const data = {
+        easy: {
+            sequence: "Ривырмпиыомпшыибогадельнятиваопрдлабризтмыдмиоытермоситовлимлюырагуашьижыртшкжщталезвиеиылрмивомиюлутшмрзакисьтлмдипкирккабантволюяиомялмиолы",
+            words: ["богадельня", "бриз", "космодром", "термос", "гуашь", "кабан", "носок", "лезвие", "закись", "клетка"],
+            answers: ["богадельня", "бриз", "термос", "гуашь", "кабан", "лезвие", "закись"]
+        },
+        medium: {
+            sequence: "имолвыюткпримгытпщшысливаарщжпимгшжпрмивтикаблуктмрвржишщтилвирщшэьуыпимшакадемияитоылвжришклтиыашжттколбарлоыюиомюаоимоюимолбаркмивмишвдобложкаимолвмиолавмкняжнаимоылмивл",
+            words: ["слива", "видеомагнитофон", "каблук", "колба", "кинокартина", "княжна", "барк", "обложка", "борец", "академия"],
+            answers: ["слива", "каблук", "колба", "княжна", "барк", "обложка", "академия"]
+        },
+        hard: {
+            sequence: "Пвррвоуррвуалгебрадлатзушмтчбсвниманиетбялыцшргррепрогнепроектловшйзкнстьчбяжаоырнгаджетнцшйзмчувытетрадьмйкемтраохьопеналцгнекычбдгсумкавыпчрсншяючемоданчиттвропноекуотпусккапр",
+            words: ["алгебра", "проект", "традиция", "самолет", "радио", "компьютер", "полка", "гаджет", "пенал", "цирк"],
+            answers: ["алгебра", "проект", "традиция", "самолет", "радио", "компьютер", "полка"]
+        }
+    };
+
+    function startTest() {
+        currentLevel = 0;
+        results = [];
+        document.getElementById('start-button').classList.add('hidden');
+        document.getElementById('sequence').classList.remove('hidden');
+        document.getElementById('words').classList.remove('hidden');
+        document.getElementById('timerDisplay').classList.remove('hidden');
+        nextLevel();
+    }
+
+    function nextLevel() {
+        if (currentLevel >= levels.length) {
+            showFinalResults();
+            return;
+        }
+
+        const level = levels[currentLevel];
+        const levelData = data[level];
+        const sequenceElement = document.getElementById('sequence');
+        const wordsElement = document.getElementById('words');
+        const timerDisplay = document.getElementById('timerDisplay');
+
+        sequenceElement.textContent = levelData.sequence;
+        wordsElement.innerHTML = '';
+        levelData.words.forEach(word => {
+            const label = document.createElement('label');
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.value = word;
+            label.appendChild(checkbox);
+            label.appendChild(document.createTextNode(word));
+            wordsElement.appendChild(label);
+            wordsElement.appendChild(document.createElement('br'));
+        });
+
+        document.getElementById('next-button').classList.remove('hidden');
+        document.getElementById('restart-button').classList.add('hidden');
+        document.getElementById('send-results-button').classList.add('hidden');
+        document.getElementById('timerDisplay').style.display = 'block';
+
+        timeRemaining = getTimeLimit(level);
+        startTimer();
+    }
+
+    function getTimeLimit(level) {
+        const timeLimits = {
+            easy: 150, // 2.5 минуты в секундах
+            medium: 120, // 2 минуты
+            hard: 60 // 1 минута
+        };
+        return timeLimits[level];
+    }
+
+    function startTimer() {
+        const timerDisplay = document.getElementById('timerDisplay');
+        timerInterval = setInterval(() => {
+            timeRemaining--;
+            timerDisplay.textContent = `Оставшееся время: ${timeRemaining} сек.`;
+            if (timeRemaining <= 0) {
+                clearInterval(timerInterval);
+                evaluateResults();
+                currentLevel++;
+                nextLevel();
+            }
+        }, 1000);
+    }
+
+    function showNextLevel() {
+        clearInterval(timerInterval);
+        evaluateResults();
+        currentLevel++;
+        nextLevel();
+    }
+
+    function evaluateResults() {
+        const level = levels[currentLevel];
+        const levelData = data[level];
+        const checkedValues = Array.from(document.querySelectorAll('input[type=checkbox]:checked')).map(el => el.value);
+        const correctCount = checkedValues.filter(value => levelData.answers.includes(value)).length;
+        const incorrectCount = checkedValues.filter(value => !levelData.answers.includes(value)).length;
+        const missedCount = levelData.answers.filter(answer => !checkedValues.includes(answer)).length;
+
+        results.push({
+            level: level,
+            correctCount: correctCount,
+            incorrectCount: incorrectCount,
+            missedCount: missedCount
+        });
+    }
+
+    function showFinalResults() {
+        clearInterval(timerInterval);
+        const timerDisplay = document.getElementById('timerDisplay');
+        timerDisplay.style.display = 'none';
+        timerDisplay.textContent = ''; // Сброс таймера
+
+        document.getElementById('sequence').classList.add('hidden');
+        document.getElementById('words').classList.add('hidden');
+        document.getElementById('next-button').classList.add('hidden');
+
+        const resultsElement = document.getElementById('results');
+        const totalCorrect = results.reduce((sum, result) => sum + result.correctCount, 0);
+        const totalIncorrect = results.reduce((sum, result) => sum + result.incorrectCount, 0);
+        const totalMissed = results.reduce((sum, result) => sum + result.missedCount, 0);
+
+        resultsElement.innerHTML = `
+            <p>Итоговые результаты:</p>
+            ${results.map(result => `
+                <p>${result.level}: 
+                    Правильных ответов: ${result.correctCount}, 
+                    Неправильных ответов: ${result.incorrectCount}, 
+                    Пропущенных слов: ${result.missedCount}
+                </p>
+            `).join('')}
+            <p>Всего правильных ответов: ${totalCorrect}</p>
+            <p>Всего неправильных ответов: ${totalIncorrect}</p>
+            <p>Всего пропущенных слов: ${totalMissed}</p>
+        `;
+
+        resultsElement.classList.remove('hidden');
+        document.getElementById('restart-button').classList.remove('hidden');
+        document.getElementById('send-results-button').classList.remove('hidden');
+
+        let correctAllCount = totalCorrect;
+    }
+
+    /* async function sendResults() {
+        const finalResults = {
+            levels: results,
+            totalCorrect: results.reduce((sum, levelResult) => sum + levelResult.correctCount, 0),
+            totalImages: results.reduce((sum, levelResult) => sum + levelResult.totalCount, 0)
+        };
+
+        const data = {
+            testType: "myunsterberg_test",
+            accuracy: finalResults.totalCorrect / finalResults.totalImages
+        };
+
+        let url = '';
+        const urlObject = new URL(window.location.href);
+
+        if (urlObject.searchParams.has('data')) {
+            url += '/myunsterberg_test?data=' + urlObject.searchParams.get('data');
+        } else {
+            url += '/myunsterberg_test';
+        }
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                body: JSON.stringify(data),
+                headers: {'Content-Type': 'application/json'},
+            });
+            const result = await response.json();
+            console.log('Success:', result);
+            window.location.href = response.url; // Перенаправление на другой URL
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    } */
+
+    function restartTest() {
+        currentLevel = 0;
+        results = [];
+        document.getElementById('sequence').textContent = '';
+        document.getElementById('words').innerHTML = '';
+        document.getElementById('results').innerHTML = '';
+        document.getElementById('start-button').classList.remove('hidden');
+        document.getElementById('next-button').classList.add('hidden');
+        document.getElementById('restart-button').classList.add('hidden');
+        document.getElementById('send-results-button').classList.add('hidden');
+        document.getElementById('sequence').classList.add('hidden');
+        document.getElementById('words').classList.add('hidden');
+        document.getElementById('timerDisplay').style.display = 'none';
+        document.getElementById('results').classList.add('hidden');
+        clearInterval(timerInterval); // Остановка таймера
+    }
+
+    async function sendData() {
+        const data = {
+            testType: "myunsterberg_test",
+            result: correctAllCount
+        }
+        let url = ''
+        const urlObject = new URL(window.location.href)
+        if (urlObject.searchParams.has('data')) {
+            url += '/abstract_test?data=' + urlObject.searchParams.get('data')
+        } else {
+            url += '/abstract_test'
+        }
+        await fetch(url, {
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: {'Content-Type': 'application/json'},
+        })
+            .then(res => {
+                console.log(res)
+                // Redirect to another URL
+                window.location.href = res.url;
+            })
+            .catch(error => console.error(error));
+    }
+</script>
+</body>
+</html>

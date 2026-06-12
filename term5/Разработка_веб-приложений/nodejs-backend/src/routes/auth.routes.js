@@ -1,0 +1,134 @@
+// Auth api
+import { Router } from 'express';
+import rateLimit from 'express-rate-limit';
+import bcrypt from 'bcrypt';
+import { findUserByLogin, saveUser } from '../repositories/user.repository.js';
+import { createToken } from '../security/jwt.js';
+
+const router = Router();
+const authLimiter = rateLimit({
+  windowMs: 10 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    ok: false,
+    message: 'Слишком много попыток. Подождите 10 секунд и попробуйте снова.',
+  },
+});
+
+// [POST] /auth/register
+router.post('/register', authLimiter, async (req, res) => {
+  try {
+    const { token: _token, login, password } = req.body;
+
+    // Validate login and password
+    if (!login || !password) {
+      return res.json({
+        ok: false,
+        message: 'Введите логин и пароль',
+      });
+    }
+
+    if (password.length < 8) {
+      return res.json({
+        ok: false,
+        message: 'Пароль должен быть не менее 8 символов',
+      });
+    }
+
+    // Check if user already exists in DB
+    const existing = await findUserByLogin(login);
+    if (existing) {
+      return res.json({
+        ok: false,
+        message: 'Ошибка регистрации, некорректные данные',
+      });
+    }
+
+    // Hash password
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    // We keep ukey only in JWT payload, not in DB
+    const ukey = Math.random().toString(36).slice(2);
+
+    // Save user to DB (email + display_name + password_hash)
+    const dbUser = await saveUser({ login, passwordHash });
+
+    // Build user object for JWT (id as number, login as API login, ukey)
+    const userForToken = {
+      id: Number(dbUser.id),
+      login: login,
+      ukey,
+    };
+
+    // Create token and return in response
+    const jwtToken = createToken(userForToken);
+
+    return res.json({
+      ok: true,
+      token: jwtToken,
+    });
+  } catch (err) {
+    console.error('Error in /auth/register:', err);
+    return res.status(500).json({
+      ok: false,
+      message: 'Ошибка сервера при регистрации',
+    });
+  }
+});
+
+// [POST] /auth/login
+router.post('/login', authLimiter, async (req, res) => {
+  try {
+    const { token: _token, login, password } = req.body;
+
+    if (!login || !password) {
+      return res.json({
+        ok: false,
+        message: 'Введите логин и пароль',
+      });
+    }
+
+    // Find user in DB by email (login)
+    const dbUser = await findUserByLogin(login);
+    if (!dbUser) {
+      return res.json({
+        ok: false,
+        message: 'Неверный логин или пароль',
+      });
+    }
+
+    // Compare password with stored hash
+    const ok = await bcrypt.compare(password, dbUser.password_hash);
+    if (!ok) {
+      return res.json({
+        ok: false,
+        message: 'Неверный логин или пароль',
+      });
+    }
+
+    // Build user object for JWT
+    const userForToken = {
+      id: Number(dbUser.id),
+      login: login, // same as dbUser.email
+      // For now we keep a static ukey, not stored in DB
+      ukey: 'default-ukey',
+    };
+
+    const jwtToken = createToken(userForToken);
+
+    return res.json({
+      ok: true,
+      token: jwtToken,
+    });
+  } catch (err) {
+    console.error('Error in /auth/login:', err);
+    return res.status(500).json({
+      ok: false,
+      message: 'Ошибка сервера при входе',
+    });
+  }
+});
+
+export default router;

@@ -1,0 +1,28 @@
+
+\begin{center}
+\begin{tikzpicture}[shorten >=2pt,node distance=4cm and 4cm,on grid,auto,>=Latex]
+   \node[state] (b1) {$b_1$};
+   \node[state] (b2) [right=of b1] {$b_2$};
+   \node[state] (b3) [right=of b2] {$b_3$};
+   \node[state] (b4) [below=of b1] {$b_4$};
+   \node[state] (b5) [right=of b4] {$b_5$};
+   \node[state] (b6) [right=of b5] {$b_6$};
+
+   \path[->]
+    (b1) edge node {z3} (b2)
+    (b1) edge [loop left, min distance=1.2cm, out=200, in=160] node {z1} (b1)
+    (b3) edge node [swap] {z2} (b2)
+    (b2) edge [loop above, min distance=1.2cm, out=110, in=70] node {z2} (b2)
+    (b4) edge node {z1} (b1)
+    (b4) edge [loop left, min distance=1.2cm, out=200, in=160] node {z3} (b4)
+    (b5) edge node {z2} (b4)
+    (b6) edge node {z3} (b3)
+    (b1) edge node {z2} (b5)
+    (b5) edge node[pos=0.2] {z3} (b3)
+    (b2) edge node[pos=0.2] {z1} (b6)
+    (b3) edge[bend left] node {z1} (b6)
+    (b6) edge[bend left] node {z2} (b4)
+
+\end{tikzpicture}
+\end{center}
+

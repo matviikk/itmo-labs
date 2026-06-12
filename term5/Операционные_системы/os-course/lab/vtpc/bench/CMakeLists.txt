@@ -1,0 +1,6 @@
+add_executable(load_crc bench_crc_load.c)
+target_include_directories(load_crc PRIVATE ${PROJECT_SOURCE_DIR}/lib)
+target_link_libraries(load_crc PRIVATE vtpc)
+target_compile_options(load_crc PRIVATE -Wall -Wextra -Wpedantic)
+add_executable(cpu_calc_crc cpu_calc_crc.c)
+target_compile_options(cpu_calc_crc PRIVATE -Wall -Wextra -Wpedantic)

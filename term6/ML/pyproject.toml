@@ -1,0 +1,19 @@
+[project]
+name = "itmo-ml-labs"
+version = "0.1.0"
+description = "Лабораторные работы по основам машинного обучения (ИТМО, P3324)"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "ipykernel",
+    "jupyter",
+    "numpy",
+    "pandas",
+    "scipy",
+    "matplotlib",
+    "seaborn",
+    "scikit-learn",
+    "openpyxl",
+    "python-docx",
+    "mne",
+    "moabb",
+]

@@ -1,0 +1,112 @@
+import { useEffect } from 'react';
+import { Navigate, RouterProvider, createBrowserRouter } from 'react-router-dom';
+import { AppLayout } from './AppLayout';
+import { LoginPage } from '../pages/auth/LoginPage';
+import { RegisterPage } from '../pages/auth/RegisterPage';
+import { HomePage } from '../pages/home/HomePage';
+import CollectionsPage from '../pages/collections/CollectionsPage';
+import { DrawingPage } from '../pages/drawing/DrawingPage';
+import { HistoryPage } from '../pages/history/HistoryPage';
+import { HistoryRoomPage } from '../pages/history/HistoryRoomPage';
+import { RoomCreatePage } from '../pages/rooms/RoomCreatePage';
+import { RoomConnectPage } from '../pages/rooms/RoomConnectPage';
+import { RoomPage } from '../pages/rooms/RoomPage';
+import { RoomDrawingPage } from '../pages/rooms/RoomDrawingPage';
+import { RoomResultsPage } from '../pages/rooms/RoomResultsPage';
+import { RoomDrawingsResultsPage } from '../pages/rooms/RoomDrawingsResultsPage';
+import { trackPageView } from '../shared/lib/analytics/metrika';
+
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <AppLayout />,
+    children: [
+      {
+        index: true,
+        element: <Navigate to="/home" replace />,
+      },
+      {
+        path: 'home',
+        element: <HomePage />,
+      },
+      {
+        path: 'collections/*',
+        element: <CollectionsPage />,
+      },
+      {
+        path: 'history',
+        element: <HistoryPage />,
+      },
+      {
+        path: 'history/:id',
+        element: <HistoryRoomPage />,
+      },
+      {
+        path: 'histore',
+        element: <HistoryPage />,
+      },
+      {
+        path: 'histore/:id_room',
+        element: <HistoryRoomPage />,
+      },
+      {
+        path: 'drawing',
+        element: <DrawingPage />,
+      },
+      {
+        path: 'rooms/create',
+        element: <RoomCreatePage />,
+      },
+      {
+        path: 'rooms/connect/:id_room',
+        element: <RoomConnectPage />,
+      },
+      {
+        path: 'rooms/:id_room',
+        element: <RoomPage />,
+      },
+      {
+        path: 'rooms/:id_room/drawing',
+        element: <RoomDrawingPage />,
+      },
+      {
+        path: 'rooms/:id_room/results',
+        element: <RoomResultsPage />,
+      },
+      {
+        path: 'rooms/:id_room/drawing_res',
+        element: <RoomDrawingsResultsPage />,
+      },
+    ],
+  },
+  {
+    path: '/login',
+    element: <LoginPage />,
+  },
+  {
+    path: '/register',
+    element: <RegisterPage />,
+  },
+]);
+
+export const AppRouter = () => {
+  useEffect(() => {
+    trackPageView(window.location.pathname, {
+      title: document.title,
+      search: window.location.search,
+      hash: window.location.hash,
+    });
+
+    const unsubscribe = router.subscribe((state) => {
+      trackPageView(state.location.pathname, {
+        title: document.title,
+        search: state.location.search,
+        hash: state.location.hash,
+      });
+    });
+
+    return unsubscribe;
+  }, []);
+
+  return <RouterProvider router={router} />;
+};

@@ -1,0 +1,78 @@
+:root {
+    --primary-color: rgba(12, 32, 77, 0.95);
+    --overlay-color: rgba(12, 28, 67, 0.95);
+    --main-color: rgb(12, 32, 77);
+    --addl-color: rgba(0, 103, 187, .8);
+    --font-style: 'Verdana', sans-serif;
+}
+
+body{
+    background-color: var(--main-color);
+}
+
+h1{
+    font-size: 1.8rem;
+    font-weight: 500;
+    letter-spacing: 0.1rem;
+    color: white;
+    text-align: center;
+    text-transform: uppercase;
+    margin-top: 2em;
+}
+
+button{
+    border: none;
+    border-radius: 3px;
+    background-color: white;
+    color: var(--primary-color);
+    padding: 1.2rem 2.8rem;
+    font-size: 1.2rem;
+    font-weight: 500;
+    letter-spacing: 0.1rem;
+    text-align: center;
+    text-decoration: none;
+    transition: opacity .6s ease-in-out;
+    margin-top: 4em;
+    margin-left: 0em;
+    margin-right: 0em;
+    position: relative;
+    left: 50%;
+    transform: translate(-50%, 0);
+    cursor: pointer;
+}
+
+button:hover {
+    opacity: .9;
+}
+
+progress {
+    margin-top: 1.8em;
+    margin-bottom: 2em;
+    margin-left: 5%;
+    width: 90%;
+    height: 1.5em;
+    background-color: #D660CC;
+}
+
+progress::-webkit-progress-bar {
+    background-color: #7908AA;
+    border-radius: 3px;
+}
+
+progress::-webkit-progress-value {
+    background-color: #4E026E;
+    border-radius: 3px;
+}
+
+#reaction-time-enclosing{
+    font-size: 1.2rem;
+    font-weight: 500;
+    letter-spacing: 0.1rem;
+    text-align: center;
+    color: white;
+    margin-top: 0em;
+    font-family: var(--font-style);
+}
+
+
+
